@@ -1,0 +1,55 @@
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Compiled executables and object files
+*.exe
+*.out
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+
+# Output directories
+daily/output/
+math/output/
+random/output/
+interview/output/
+output/
+build/
+bin/
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Core dumps
+core
+*.core
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Log files
+*.log
+
+# Test results
+test_results/
+coverage/

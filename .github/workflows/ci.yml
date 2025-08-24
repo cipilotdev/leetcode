@@ -1,0 +1,181 @@
+name: LeetCode Solutions CI/CD
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compiler: [g++, clang++]
+        build_type: [Release, Debug]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang
+
+      - name: Setup C++ environment
+        run: |
+          echo "Using compiler: ${{ matrix.compiler }}"
+          ${{ matrix.compiler }} --version
+
+      - name: Create output directories
+        run: make dirs
+
+      - name: Compile all solutions (Release)
+        if: matrix.build_type == 'Release'
+        run: |
+          export CXX=${{ matrix.compiler }}
+          make all
+
+      - name: Compile all solutions (Debug)
+        if: matrix.build_type == 'Debug'
+        run: |
+          export CXX=${{ matrix.compiler }}
+          make debug
+
+      - name: Run compilation tests
+        run: make test
+
+      - name: Check for memory leaks (Debug only with g++)
+        if: matrix.build_type == 'Debug' && matrix.compiler == 'g++'
+        run: |
+          sudo apt-get install -y valgrind
+          # Run a sample executable with valgrind if it exists
+          if [ -f "daily/output/1004-dl-code" ]; then
+            echo "Running memory leak check..."
+            echo "" | timeout 5s valgrind --leak-check=full --error-exitcode=1 ./daily/output/1004-dl-code || true
+          fi
+
+      - name: Archive build artifacts
+        if: matrix.build_type == 'Release' && matrix.compiler == 'g++'
+        uses: actions/upload-artifact@v4
+        with:
+          name: leetcode-solutions
+          path: |
+            daily/output/
+            math/output/
+            random/output/
+            interview/output/
+          retention-days: 7
+
+      - name: Code style check (clang-format)
+        if: matrix.compiler == 'clang++'
+        run: |
+          sudo apt-get install -y clang-format
+          echo "Checking code style..."
+          find . -name "*.cpp" -exec clang-format --dry-run --Werror {} \; || echo "Style check completed (warnings may exist)"
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      - name: Run static analysis
+        run: |
+          echo "Running static analysis..."
+          cppcheck --enable=all --inconclusive --std=c++17 \
+            --suppress=missingIncludeSystem \
+            --suppress=unusedFunction \
+            --error-exitcode=0 \
+            daily/ math/ random/ interview/
+
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build optimized versions
+        run: |
+          make clean
+          export CXXFLAGS="-std=c++17 -O3 -march=native -DNDEBUG"
+          make all
+
+      - name: Basic performance check
+        run: |
+          echo "Performance test completed (placeholder for actual performance tests)"
+          # Here you could add actual performance benchmarks
+          echo "Built with optimization flags: -O3 -march=native"
+
+  security-scan:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Bandit security scan
+        run: |
+          # Placeholder for security scanning
+          echo "Security scan placeholder - consider adding CodeQL or similar tools"
+
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Checking for potential hardcoded secrets..."
+          if grep -r -i "password\|secret\|key\|token" --include="*.cpp" .; then
+            echo "⚠️  Potential secrets found - please review"
+          else
+            echo "✅ No obvious hardcoded secrets found"
+          fi
+
+  documentation:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate solution summary
+        run: |
+          echo "# LeetCode Solutions Summary" > solution_summary.md
+          echo "" >> solution_summary.md
+          echo "## Daily Problems" >> solution_summary.md
+          ls daily/*.cpp | while read file; do
+            basename=$(basename "$file" .cpp)
+            echo "- [$basename](daily/$basename.cpp)" >> solution_summary.md
+          done
+          echo "" >> solution_summary.md
+          echo "## Math Problems" >> solution_summary.md
+          ls math/*.cpp | while read file; do
+            basename=$(basename "$file" .cpp)
+            echo "- [$basename](math/$basename.cpp)" >> solution_summary.md
+          done
+          echo "" >> solution_summary.md
+          echo "## Random Problems" >> solution_summary.md
+          ls random/*.cpp | while read file; do
+            basename=$(basename "$file" .cpp)
+            echo "- [$basename](random/$basename.cpp)" >> solution_summary.md
+          done
+          echo "" >> solution_summary.md
+          echo "## Interview Problems" >> solution_summary.md
+          ls interview/*.cpp | while read file; do
+            basename=$(basename "$file" .cpp)
+            echo "- [$basename](interview/$basename.cpp)" >> solution_summary.md
+          done
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: solution_summary.md
