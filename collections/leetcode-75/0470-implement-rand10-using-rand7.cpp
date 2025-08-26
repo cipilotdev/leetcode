@@ -9,6 +9,10 @@ using namespace std;
 
 class Solution {
 public:
+    int rand7() {
+        return rand() % 7 + 1;
+    }
+    
     int rand10() {
         int row, col, idx;
         do {
