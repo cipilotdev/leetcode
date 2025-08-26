@@ -1,13 +1,50 @@
-# IDE and Editor files
+# Compiled binaries
+build/
+*.exe
+*.out
+*.app
+*.o
+*.obj
+
+# IDE/Editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Compiled executables and object files
-*.exe
-*.out
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Old structure (to be removed)
+cpp/
+
+# Backup files
+*.bak
+*.backup
 *.o
 *.obj
 *.so
