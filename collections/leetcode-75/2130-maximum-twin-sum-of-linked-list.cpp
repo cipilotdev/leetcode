@@ -1,3 +1,8 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
 /**
  * Definition for singly-linked list.
  * struct ListNode {
@@ -8,6 +13,15 @@
  *     ListNode(int x, ListNode *next) : val(x), next(next) {}
  * };
  */
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
+};
+
 class Solution {
 public:
     int pairSum(ListNode* head) {
@@ -28,3 +42,11 @@ public:
     }
 };
 
+int main() {
+    Solution sol;
+    ListNode* head = new ListNode(5);
+    ListNode* second = new ListNode(4);
+    ListNode* third = new ListNode(3);
+    ListNode* fourth = new ListNode(2);
+    ListNode* fifth = new ListNode(1);
+}
